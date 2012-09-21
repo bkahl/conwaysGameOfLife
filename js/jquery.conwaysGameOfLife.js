@@ -8,22 +8,14 @@ GameList.prototype = {
      * inserts an element at the tail of the linked list
      * @param {Object} val
      */
-
-    /*{ oldRow: cRow, 
-		oldCol: cCol, 
-		surroundingCells: {row: e.row, 
-						   col: e.col, 
-						   state: $('#'+e.row+' .'+e.col).attr('class').split(" ")[1] 
-		} }
-	*/
 	
     insert:function(val){
-		alert(val[0].surroundingCells);
+		//alert(val.id);
 		
         var item = {
             value:val,
             next:null
-        }
+        };
 
         if (this.head === null){
             this.head = item;
@@ -37,23 +29,128 @@ GameList.prototype = {
         }           
     },
 
-	next:function(val){
+    /**
+     * shows all elements of the linked list
+     */
+
+    showAllElements:function(){
+        if (this.head === null) return;
+        var current = this.head, i = 1;
+        while(current.next !== null){
+            console.log('The element at position ' + i + ' has value ' + current.value);
+            current = current.next;
+            i++;
+        }
+        // printing the last element
+        console.log('The element at position ' + i + ' has value ' + current.value);
+     },
+
+    /**
+     * create data hash of all valid surrounding cells of a cell
+     */
+	createDataHash:function(){
+        if (this.head === null) return;
+        var current = this.head, i = 1, surroundingCells = [{}];
+
+		surroundingCells.id = current.value.id.split("-")[0];
+		surroundingCells.row = current.value.id.split("-")[0].split('cr')[1].split('cc')[0];
+		surroundingCells.col = current.value.id.split("-")[0].split('cr')[1].split('cc')[1];
+		surroundingCells.surroundingCells = [];
 		
+        while(current.next !== null){
+			surroundingCells.surroundingCells.push(current.value.cell);
+            current = current.next;
+            i++;
+        }
+        // printing the last element
+		surroundingCells.surroundingCells.push(current.value.cell);
+		console.log('created hash = { id: '+surroundingCells.id+', row: '+surroundingCells.row+', col: '+surroundingCells.col+', surroundingCells: '+surroundingCells.surroundingCells+'}');
+		return surroundingCells;
+	},
+
+    /**
+     * create data hash for next game and determine if cell lives or dies
+     */	
+	nextGameDataHash:function(){
+        if (this.head === null) return;
+        var current = this.head, i = 1;
+		console.log('next game data hash : ',current);
 	}
+};
+
+function getSurroundingCells(allCells, rows, columns){
+	
+	if(!allCells) return;
+	
+	var validSurroundingCells = [{}], 
+		count = 1;
+	
+	allCells.forEach(function(o){
+		
+		console.log('cells : ',o.row+', '+o.col);
+		
+		var cRow 	= o.row, 
+			cCol 	= o.col,
+			cells	= new GameList(),
+			dataHash,
+			surroundingCells;
+			
+		surroundingCells = [
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+cRow+'c'+(cCol+1),			row: cRow,		col: cCol+1 },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow+1)+'c'+(cCol+1),		row: cRow+1, 	col: cCol+1 },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow+1)+'c'+cCol,			row: cRow+1, 	col: cCol },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow+1)+'c'+(cCol-1),		row: cRow+1, 	col: cCol-1 },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+cRow+'c'+(cCol-1),			row: cRow, 		col: cCol-1 },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow-1)+'c'+(cCol-1),		row: cRow-1, 	col: cCol-1 },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow-1)+'c'+cCol,			row: cRow-1, 	col: cCol },
+			{ id: 'cr'+cRow+'cc'+cCol+'-r'+(cRow-1)+'c'+(cCol+1),		row: cRow-1, 	col: cCol+1 }
+		];
+	
+		surroundingCells.forEach(function(e){
+			
+			var cell;
+			
+			if(e.row > rows) console.log('row is outside of container');
+			else if(e.col > columns) console.log('column is outside of container');
+			else if(e.row <= 0) console.log('row is less then or equal to 0');
+			else if(e.col <= 0) console.log('column is less then or equal to 0');
+			else {		
+				cell = { id: e.id, cell: { row: e.row, col: e.col, state: $('#'+e.row+' .'+e.col).attr('class').split(" ")[1] } };
+				cells.insert(cell);
+			}
+		});
+		
+		dataHash = cells.createDataHash();
+		validSurroundingCells[count] = { id: dataHash.id, row: dataHash.id.split('cr')[1].split('cc')[0], col: dataHash.id.split('cr')[1].split('cc')[1], cells: dataHash.cells, state: $('#'+cRow+' .'+cCol).attr('class').split(" ")[1] };
+		console.log('validSurroundingCells['+count+'] : ',validSurroundingCells[count]);
+		count++;
+		
+	});
+	
+	return validSurroundingCells;
+	
 }
 
-function createGame(id, opts){
+function getAllGridPositionsOnBoard(rowSize,colSize){
+	if(rowSize === 0 || colSize === 0) return;
+	
+	var allCells = [],
+		cellAmount = (rowSize*colSize),
+		i, r, c;
+	
+	for(r=1; r<=rowSize; r++){
+		for(c=1; c<=colSize; c++){
+			allCells.push({ row: r, col: c });
+			console.log('row : '+r+', col : '+c);
+		}
+	}
+	return allCells;
+}
 
-    var width				= opts.board.rowAndColSize.width, 
-        height				= opts.board.rowAndColSize.height,
-        rows				= opts.board.rowAndCol.rows,
-        columns				= opts.board.rowAndCol.cols,
-        livingCells			= opts.board.livingCells,
-		surroundingCells	= [],
-		cellImg				= "<img src='images/cell-icon.png'/>",
-		nextLivingCells		= {}, 
-        table, r, c,
-		game				= new GameList();
+function buildBoard(id, rows, columns){
+	if(rows === 0 || columns === 0) return;
+	
+	var table, r, c;
 	
 	table = "<table>";
 		table += "<tbody>";
@@ -66,8 +163,25 @@ function createGame(id, opts){
 			}
 		table += "</tbody>";
 	table += "</table>";
-			
-    $(id).append(table);
+	
+	$(id).append(table);
+}
+
+function createGame(id, opts){
+
+    var width					= opts.board.rowAndColSize.width, 
+        height					= opts.board.rowAndColSize.height,
+        rows					= opts.board.rowAndCol.rows,
+        columns					= opts.board.rowAndCol.cols,
+		allGridCells			= getAllGridPositionsOnBoard(rows,columns),
+        livingCells				= opts.board.livingCells,
+		cellImg					= "<img src='images/cell-icon.png'/>",
+		game					= new GameList(),
+		validSurroundingCells 	= [],
+		surroundingCells, i;
+		
+	
+	buildBoard(id, rows, columns);
 
 	$("table tr").css('height',height);
 	$("table tr td").css('max-width',width).css('padding','10px').css('border','1px solid #000');
@@ -82,53 +196,17 @@ function createGame(id, opts){
 								.append(cellImg);
 	});
 	
-	livingCells.forEach(function(o){
+	surroundingCells = getSurroundingCells(allGridCells, rows, columns);
 
-		var cRow 	= o.row, 
-			cCol 	= o.col,
-			cells 	= [];
-			
-		//alert('living cells = r:'+cRow+', c:'+cCol);	
-		surroundingCells = [
-			{row: cRow,		col: cCol+1},
-			{row: cRow+1, 	col: cCol+1},
-			{row: cRow+1, 	col: cCol},
-			{row: cRow+1, 	col: cCol-1},
-			{row: cRow, 	col: cCol-1},
-			{row: cRow-1, 	col: cCol-1},
-			{row: cRow-1, 	col: cCol},
-			{row: cRow-1, 	col: cCol+1}
-		];
-
-		surroundingCells.forEach(function(e){
-			
-			if(e.row > rows) console.log('row is outside of container');
-			else if(e.col > columns) console.log('column is outside of container');
-			else if(e.row <= 0) console.log('row is less then or equal to 0');
-			else if(e.col <= 0) console.log('column is less then or equal to 0');
-			else {
-				cells.push({row: e.row, col: e.col, state: $('#'+e.row+' .'+e.col).attr('class').split(" ")[1] });
-				console.log('good cell : ', $('#'+e.row+' .'+e.col).attr('class').split(" ")[1]+', r&c coordinates : r=',e.row+", c="+e.col);
-			}
-		});
-		alert('cells : '+cells[0].row);
-		
-		for(i in cells){
-			//alert("I: "+i);
-			
-			if(cells.hasOwnProperty(i)){
-				var dynamic_property_name = i;
-				nextLivingCells[dynamic_property_name] = cells[i];
-				
-			}
-		}
-		//nextLivingCells.push(cells);
-		
-	});
+	for(i=surroundingCells.length-1; i>=1; i--){
+		if(surroundingCells[i] === undefined) return alert('undefined');
+		validSurroundingCells.push(surroundingCells[i]);
+	}
 	
-	alert('length: '+nextLivingCells.length);
-	game.insert(nextLivingCells);
-	//alert(nextLivingCells.length);
+	console.log('valid surrounding cells : ',validSurroundingCells);
+	
+	game.insert(validSurroundingCells);
+	game.nextGameDataHash();
 }
 
 (function($){
