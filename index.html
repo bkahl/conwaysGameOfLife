@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+	<title>Conway's Game</title>
+	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8">
+	<link rel="stylesheet" href="css/styles.css">
+  </head>
+
+  <body>
+    
+    <div id="game"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.js" charset="utf-8"></script>
+  	<script type="text/javascript" src="js/jquery.conwaysGameOfLife.js"></script>
+  	<script type="text/javascript">
+  	  
+  		$().ready(function() {
+         
+       		$("#game").conwaysGameOfLife();
+         
+  	  	});
+  	</script>
+  	
+  </body>
+
+</html>
