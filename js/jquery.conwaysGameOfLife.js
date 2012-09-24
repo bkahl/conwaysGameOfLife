@@ -73,8 +73,76 @@ GameList.prototype = {
      */	
 	nextGameDataHash:function(){
         if (this.head === null) return;
-        var current = this.head, i = 1;
-		console.log('next game data hash : ',current);
+        var current = this.head, 
+			i, 
+			lengthOfCells = current.value.length,
+			nextGameCells = [{}];
+
+		console.log('NEXT GAME DATA HASH!');
+		console.log('current : ',current);
+
+		for(i=0; i<lengthOfCells; i++){
+			var cell = current.value[i],
+				row = cell.row,
+				col = cell.col,
+				state = cell.state,
+				id = cell.id,
+				surroundingCellsLength = cell.surroundingCells.length,
+				sc,
+				alive = 0,
+				dead = 0,
+				nextState;
+				
+			console.log('cell'+[i]+' : ',cell);
+			console.log('CURRENT STATE : ',state);
+			for(sc=0;sc<surroundingCellsLength;sc++){
+				var surroundingCell = cell.surroundingCells[sc],
+					surroundingCellState = surroundingCell.state;
+					
+				if(surroundingCellState === "alive") alive +=1;
+				else if(surroundingCellState === "dead") dead +=1;
+			}
+			
+			console.log('alive cells : ',alive);
+			console.log('dead cells : ',dead);
+			
+			if(state === "alive"){
+				if(alive <= 1){
+					//becomes dead due to under-population
+					nextState = "dead";
+				}
+				else if(alive === 2 || alive === 3){
+					//stays alive
+					nextState = "alive";
+				}
+				else if(alive >= 4){
+					//becomes dead due to overcrowding
+					nextState = "dead";
+				}
+			}
+			else if(state === "dead"){
+				if(alive === 3){
+					//becomes alive due to reproduction
+					nextState = "alive";
+				}else{
+					//stays dead
+					nextState = "dead";
+				}
+			}
+			
+			console.log('nextState : ',nextState);
+			
+			nextState = null;
+			alive = 0;
+			dead = 0;
+		}
+		// for(i=1; i<=lengthOfCells; i++){
+		// 	var state = current.value.state,
+		// 		surroundingCells = current.value.length,
+		// 		surroundingStates;
+		// 		
+		// 	console.log('next game data hash : ',surroundingCells);
+		// }
 	}
 };
 
@@ -121,7 +189,7 @@ function getSurroundingCells(allCells, rows, columns){
 		});
 		
 		dataHash = cells.createDataHash();
-		validSurroundingCells[count] = { id: dataHash.id, row: dataHash.id.split('cr')[1].split('cc')[0], col: dataHash.id.split('cr')[1].split('cc')[1], cells: dataHash.cells, state: $('#'+cRow+' .'+cCol).attr('class').split(" ")[1] };
+		validSurroundingCells[count] = { id: dataHash.id, row: dataHash.id.split('cr')[1].split('cc')[0], col: dataHash.id.split('cr')[1].split('cc')[1], surroundingCells: dataHash.surroundingCells, state: $('#'+cRow+' .'+cCol).attr('class').split(" ")[1] };
 		console.log('validSurroundingCells['+count+'] : ',validSurroundingCells[count]);
 		count++;
 		
