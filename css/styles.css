@@ -42,7 +42,12 @@ table {
   border-spacing: 0; }
   
 img {
-	max-width: 100%;
-	height: auto;
-	width: auto\9; /* ie8 */
+	height: 50px;
+	width: 50px;
+}
+
+.alive{
+	height: 50px;
+	width: 50px;
+	background: url(images/cell-icon.png) no-repeat;
 }
