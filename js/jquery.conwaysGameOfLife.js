@@ -71,13 +71,23 @@ GameList.prototype = {
     /**
      * create data hash for next game and determine if cell lives or dies
      */	
-	nextGameDataHash:function(){
+	nextGameDataHash:function(board){
         if (this.head === null) return;
         var current = this.head, 
 			i, 
 			lengthOfCells = current.value.length,
-			nextGameCells = [{}];
-
+			nextGameCells = [],
+			id = board.id,
+			opts = {
+				"board": {
+					"rowAndCol": { "rows": board.rowAndCol.rows, "cols": board.rowAndCol.cols },
+					"rowAndColSize": { "width": board.rowAndColSize.width, "height": board.rowAndColSize.height },
+					"livingCells": [{}]
+				}
+			};
+			
+			console.log('rowAndCol : ',opts.board.rowAndCol.rows);
+			
 		console.log('NEXT GAME DATA HASH!');
 		console.log('current : ',current);
 
@@ -89,6 +99,7 @@ GameList.prototype = {
 				id = cell.id,
 				surroundingCellsLength = cell.surroundingCells.length,
 				sc,
+				nextGameCell = [{}],
 				alive = 0,
 				dead = 0,
 				nextState;
@@ -129,6 +140,14 @@ GameList.prototype = {
 					nextState = "dead";
 				}
 			}
+					
+			nextGameCell.col = col,
+			nextGameCell.row = row,
+			nextGameCell.state = nextState;
+			
+			if(nextState === "alive") opts.board.livingCells[i] = { "row": row, "col": col };
+			
+			nextGameCells.push(nextGameCell);
 			
 			console.log('nextState : ',nextState);
 			
@@ -136,13 +155,10 @@ GameList.prototype = {
 			alive = 0;
 			dead = 0;
 		}
-		// for(i=1; i<=lengthOfCells; i++){
-		// 	var state = current.value.state,
-		// 		surroundingCells = current.value.length,
-		// 		surroundingStates;
-		// 		
-		// 	console.log('next game data hash : ',surroundingCells);
-		// }
+		console.log('nextGameCells : ',nextGameCells);
+		console.log('opts : ',opts);
+		
+		createGame(id, opts);
 	}
 };
 
@@ -236,7 +252,9 @@ function buildBoard(id, rows, columns){
 }
 
 function createGame(id, opts){
-
+	
+	console.log('create game : ',opts);
+	
     var width					= opts.board.rowAndColSize.width, 
         height					= opts.board.rowAndColSize.height,
         rows					= opts.board.rowAndCol.rows,
@@ -246,7 +264,12 @@ function createGame(id, opts){
 		cellImg					= "<img src='images/cell-icon.png'/>",
 		game					= new GameList(),
 		validSurroundingCells 	= [],
-		surroundingCells, i;
+		surroundingCells, i,
+		board = {
+			"id": id,
+			"rowAndCol": {"rows": rows, "cols": columns },
+			"rowAndColSize": {"width": width, "height": height}
+		};
 		
 	
 	buildBoard(id, rows, columns);
@@ -274,7 +297,7 @@ function createGame(id, opts){
 	console.log('valid surrounding cells : ',validSurroundingCells);
 	
 	game.insert(validSurroundingCells);
-	game.nextGameDataHash();
+	game.nextGameDataHash(board);
 }
 
 (function($){
